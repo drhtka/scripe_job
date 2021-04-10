@@ -1,0 +1,21 @@
+ {% extends "base.html" %}
+    <title>{% block title %}Home{% endblock %}</title>
+
+{% block content %}
+{% for obj in object_list %}
+{% comment %} https://bootstrap-4.ru/docs/4.0/components/card/ {% endcomment %}
+
+<div class="card my-3">
+  <h5 class="card-header"><a href="{{ obj.url }}">{{ obj.title }}</a></h5>
+  <div class="card-body">
+    {% comment %} <h5 class="card-title">Специальный заголовок</h5> {% endcomment %}
+    <p class="card-text">{{ obj.description }}</p>
+    <p class="card-text">{{ obj.city.name }} | {{ obj.language.name }} | 
+    <small>{{ obj.timestamp|date:"d-m-Y" }}</small></p>
+    {% comment %} <a href="#" class="btn btn-primary">Переход куда-нибудь</a> {% endcomment %}
+  </div>
+</div>
+
+{% endfor %}
+{% endblock %}
+
