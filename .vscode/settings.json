@@ -1,4 +1,4 @@
-{"python.pythonPath": "${workspaceRoot}\\Scripts\\python.exe",
+{"python.pythonPath": "venv\\Scripts\\python.exe",
     "python.linting.pylintEnabled": true,
     "files.autoSave": "onFocusChange",
     "python.autoComplete.extraPaths": [
