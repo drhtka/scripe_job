@@ -59,7 +59,7 @@ class MyUser(AbstractBaseUser):
 
     objects = MyUserManager()
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'email' #обязательное поле
     REQUIRED_FIELDS = []
 
     def __str__(self):

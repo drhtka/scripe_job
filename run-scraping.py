@@ -18,7 +18,7 @@ import django
 django.setup()
 # 52 less scripe_job подкл django settings end
 from scraping.parsers import * # импрортим все
-from scraping.models import Vacancy, City, Language
+from scraping.models import Vacancy, City, Language, Error
 
 parsers = (
     (work, 'https://www.work.ua/ru/jobs-kyiv-python'),
@@ -41,11 +41,14 @@ for func, url in parsers:
 
 
 for job in jobs:
-    v = Vacancy(**job, city=city, language=language)# раскрываем словарь, фильруем по city langvuage выборки и записвыаем в базу данных
+    v = Vacancy(**job, city=city, language=language)# раскрываем словарь, фильтруем по city language выборки
     try:
-        v.save()
+        v.save()# и записвыаем в базу данных
     except DatabaseError:
         pass
+
+if errors:
+    er = Error(data=errors).save()
 # 52 урок закоментили
 # h = codecs.open('work.txt', 'w', 'utf-8')# открываем в режиме записи и задаем кодировку 'utf-8'
 # h.write(str(jobs))# записываем весь контент словарем
