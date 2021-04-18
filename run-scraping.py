@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import asyncio
+
 import requests
 import codecs
 from bs4 import BeautifulSoup as BS
@@ -38,7 +40,7 @@ parsers = ( # будем подставлят урл из словаря
     (djinni, 'djinni'),
     (rabota, 'rabota'),
 )
-
+jobs, errors = [], []
 def get_settings():
     qs = User.objects.filter(send_email=True).values()# т.е мы используем не MyUser, User того ког определила джанго
     settings_lst = set((q['city_id'], q['language_id']) for q in qs)# получим айдишники из кверисет city_id'], q['language_id
@@ -59,6 +61,11 @@ def get_urls(_settings): # на вход будем получать данны�
         tmp['url_data'] = url_dict[pair] # {'work': 'https://www.work.ua/ru/jobs-kyiv-python', 'rabota': 'https://rabota.ua/zapros/python/%D1%83%D0%BA%D1%80%D0%B0%D0%B8%D0%BD%D0%B0', 'dou': 'https://jobs.dou.ua/vacancies/?city=%D0%9A%D0%B8%D0%B5%D0%B2&category=Python', 'djinni': 'https://djinni.co/jobs/?location=%D0%9A%D0%B8%D0%B5%D0%B2&primary_keyword=Python'}
         urls.append(tmp) # [{'city': 1, 'language': 1, 'url_data': {'work': 'https://www.work.ua/ru/jobs-kyiv-python', 'rabota': 'https://rabota.ua/zapros/python/%D1%83%D0%BA%D1%80%D0%B0%D0%B8%D0%BD%D0%B0', 'dou': 'https://jobs.dou.ua/vacancies/?city=%D0%9A%D0%B8%D0%B5%D0%B2&category=Python', 'djinni': 'https://djinni.co/jobs/?location=%D0%9A%D0%B8%D0%B5%D0%B2&primary_keyword=Python'}}]
     return urls
+async def main(value):
+    func, url, city, language = value # таким образом мы получаем значения запакованные tmp_tasks =  [(func, data['url_data'][key], data['city'], data['language'])
+    job, err = await loop.run_in_executor(None, func, url, city, language)
+    errors.extend(err) #  в асинхронном режиме запкскаем в соотвествующие сиски
+    jobs.extend(job) #   в асинхронном режиме запкскаем в соотвествующие сиски
 
 settings = get_settings()
 url_list = get_urls(settings)
@@ -68,15 +75,29 @@ url_list = get_urls(settings)
 
 # print(city)
 # print(language)
-jobs, errors = [], []
-for data in url_list:
+# import time  1
 
-    for func, key in parsers:
-        # print(func, url)
-        url = data['url_data'][key]
-        j, e = func(url, city=data['city'], language=data['language'])
-        jobs += j
-        errors += e
+# start = time.time()  2
+loop = asyncio.get_event_loop()# создаем некиц loop в котором будет запускаться наша задача, необходимо создать задачи потом выполнить
+tmp_tasks = [(func, data['url_data'][key], data['city'], data['language']) # - название функции, data['url_data'][key]  url
+             for data in url_list
+             for func, key in parsers]
+
+tasks = asyncio.wait([loop.create_task(main(f)) for f in tmp_tasks])
+
+#
+# for data in url_list:
+#
+#     for func, key in parsers:
+#         # print(func, url)
+#         url = data['url_data'][key]
+#         j, e = func(url, city=data['city'], language=data['language'])
+#         jobs += j
+#         errors += e
+
+loop.run_until_complete(tasks)
+loop.close()
+#print(time.time()-start)# 3 узнаем сколько времени ушло на ваполнениние запроса
 
 for job in jobs:
     v = Vacancy(**job)  # раскрываем словарь,
