@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render, redirect
-
+import datetime as dt
 from django.contrib.auth import authenticate, login, logout, get_user_model
-from accounts.forms import UserLoginForm, UserRegistrationForm, UserUpdateForm
+from accounts.forms import UserLoginForm, UserRegistrationForm, UserUpdateForm, ContactForm
 from django.contrib import messages
 # Create your views here.
+from scraping.models import Error
+
 User = get_user_model()
 
 def login_view(request):
@@ -44,6 +46,7 @@ def register_view(request):
 
 
 def update_view(request):
+    contact_form = ContactForm() # форма для заплнения пожелания
     if request.user.is_authenticated:
         user = request.user# проверяем зарегестрировался ли пользователь
         if request.method == 'POST':
@@ -60,7 +63,7 @@ def update_view(request):
             initial={'city': user.city, 'language': user.language,
                      'send_email': user.send_email})
         return render(request, 'accounts/update.html',
-                      {'form': form})
+                      {'form': form,  'contact_form': contact_form})# будет доступна contact_form форма для заплнения пожелания
     else:
         return redirect('accounts:login')# если нет перенаправить на страницу входа
 
@@ -72,3 +75,30 @@ def delete_view(request):
             qs.delete()
             messages.error(request, 'Пользователь удален :(')
     return redirect('home')
+
+def contact(request):
+    if request.method == 'POST':
+        contact_form = ContactForm(request.POST or None)
+        if contact_form.is_valid():
+            data = contact_form.cleaned_data
+            city = data.get('city')
+            language = data.get('language')
+            email = data.get('email')
+            qs = Error.objects.filter(timestamp=dt.date.today())
+            if qs.exists(): # если добавлена запись
+                err = qs.first()
+                data = err.data.get('user_data', [])# если данные пустые мы получаемпустой список
+                data.append({'city': city, 'email': email, 'language': language})# если данные есть они наполняются данными
+                err.data['user_data'] = data # и добавим новые данные перзапишем
+                err.save()
+            else:# если пусто, тогда создаем новый список
+                data = {'user_data': [
+                    {'city': city, 'email': email, 'language': language}
+                ]}
+                Error(data=data).save()
+            messages.success(request, 'Данные отправлены администрации.')
+            return redirect('accounts:update')
+        else:
+            return redirect('accounts:update')# если форма н евалидна
+    else:
+        return redirect('accounts:login')

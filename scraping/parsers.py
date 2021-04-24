@@ -51,7 +51,7 @@ def rabota(url, city=None, language=None):
     domain = 'https://rabota.ua'
     # url = 'https://www.work.ua/ru/jobs-kyiv-python/'
     if url:
-        resp = requests.get(url, headers=headers[randint(0, 2)]) # делаем запрос представишись брайзером и что то вернет в отвер
+        resp = requests.get(url, headers=headers[randint(0, 2)]) # делаем запрос представишись браузером и что то вернет в отвер
         if resp.status_code == 200:
             soup = BS(resp.content, 'html.parser')# что парсим метод парсера html.parser
             new_jobs = soup.find('div',
@@ -141,7 +141,7 @@ def djinni(url, city=None, language=None):
                         comp = li.find('div', attrs={'class': 'list-jobs__details__info'})
                         if comp:
                             company = comp.text # обращаемся ко всему тексту
-                        jobs.append({'title': title.text, 'url': domain + href, # домен не нужен ссылка абсолютная
+                        jobs.append({'title': title.text, 'url': domain + href, # ссылка
                                     'description': content, 'company': company,
                                      'city_id': city, 'language_id': language})
             else:

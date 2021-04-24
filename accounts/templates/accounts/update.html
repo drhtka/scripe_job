@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<div class="row ">
+<div class="row "></div>
     <div class="col-md-8 mx-auto">
         <h4 class="my-2">Настройки</h4>
     <form method="POST" action="">{% csrf_token %}
@@ -17,7 +17,7 @@
         <button type="submit" class="btn btn-danger my-3">Удалить</button>
     </form>
     </div>
-</div>
+
 
 <div class="row my-5">
     <div class="col-md-8 mx-auto">
@@ -34,12 +34,12 @@
         </p>
         <div class="collapse" id="collapsed">
           <div class="card card-body">
-{#              <form method="POST" action="{% url 'accounts:contact' %} ">{% csrf_token %}#}
-{#                <div class="form-group">#}
-{#                {{ contact_form.as_p }}#}
-{#                </div>#}
-{#                <button type="submit" class="btn btn-primary">Отправить</button>#}
-{#              </form>#}
+              <form method="POST" action="{% url 'accounts:contact' %} ">{% csrf_token %}
+                <div class="form-group">
+                {{ contact_form.as_p }}
+                </div>
+                <button type="submit" class="btn btn-primary">Отправить</button>
+              </form>
           </div>
         </div>
 

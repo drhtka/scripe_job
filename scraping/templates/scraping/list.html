@@ -2,22 +2,23 @@
 <title>{% block title %}Home{% endblock %}</title>
 
 {% block content %}
+    <h3><div class="my-4 text-center">Результаты согласно вашего запроса</div></h3>
     {% for obj in object_list %}
         {% comment %} https://bootstrap-4.ru/docs/4.0/components/card/ {% endcomment %}
 
         <div class="card my-3">
             <h5 class="card-header"><a href="{{ obj.url }}">{{ obj.title }}</a></h5>
             <div class="card-body">
-                <h4>{{ obj.company }}</h4>
+
                 {% comment %} <h5 class="card-title">Специальный заголовок</h5> {% endcomment %}
                 <p class="card-text">{{ obj.description }}</p>
+                <p>{{ obj.company }}</p>
                 <p class="card-text">{{ obj.city.name }} | {{ obj.language.name }} |
                     <small>{{ obj.timestamp|date:"d-m-Y" }}</small></p>
                 {% comment %} <a href="#" class="btn btn-primary">Переход куда-нибудь</a> {% endcomment %}
             </div>
         </div>
-    {% empty %}
-        <h3><div class="col-md-8 mx-auto">К сожелению, по Вашему запросу ниего не найдено!</div></h3>
+
     {% endfor %}
     <!--pagination-->
     {% if object_list %}<!--если пусто, пагинация не отображается-->
@@ -70,6 +71,9 @@
 {#                </div>#}
         </div>
     </div>
+        {% else %}
+
+        <h3><div class="col-md-8 mx-auto">К сожелению, по Вашему запросу ниего не найдено!</div></h3>
     {% endif %}
     <!--pagination end-->
     <div class="row">

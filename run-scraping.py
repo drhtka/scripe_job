@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import asyncio
-
+import datetime as dt
 import requests
 import codecs
 from bs4 import BeautifulSoup as BS
@@ -19,7 +19,6 @@ os.environ[
     "DJANGO_SETTINGS_MODULE"] = 'scripe_job.settings'  # будет установлена в переменных окружения, указываем название проекта где файл settings.py
 
 import django
-
 django.setup()
 # 52 less scripe_job подкл django settings end
 from scraping.parsers import *  # импрортим все
@@ -54,12 +53,13 @@ def get_urls(_settings): # на вход будем получать данны�
     urls = []
 
     for pair in _settings: # _settings  {(1, 1)}
-        tmp = {}
-        tmp['city'] = pair[0] #'city': 1,
-        tmp['language'] = pair[1] # 'language': 1,
-        # url_data = url_dict.get(pair)
-        tmp['url_data'] = url_dict[pair] # {'work': 'https://www.work.ua/ru/jobs-kyiv-python', 'rabota': 'https://rabota.ua/zapros/python/%D1%83%D0%BA%D1%80%D0%B0%D0%B8%D0%BD%D0%B0', 'dou': 'https://jobs.dou.ua/vacancies/?city=%D0%9A%D0%B8%D0%B5%D0%B2&category=Python', 'djinni': 'https://djinni.co/jobs/?location=%D0%9A%D0%B8%D0%B5%D0%B2&primary_keyword=Python'}
-        urls.append(tmp) # [{'city': 1, 'language': 1, 'url_data': {'work': 'https://www.work.ua/ru/jobs-kyiv-python', 'rabota': 'https://rabota.ua/zapros/python/%D1%83%D0%BA%D1%80%D0%B0%D0%B8%D0%BD%D0%B0', 'dou': 'https://jobs.dou.ua/vacancies/?city=%D0%9A%D0%B8%D0%B5%D0%B2&category=Python', 'djinni': 'https://djinni.co/jobs/?location=%D0%9A%D0%B8%D0%B5%D0%B2&primary_keyword=Python'}}]
+        if pair in url_dict: # может не быть пары урл яп
+            tmp = {}
+            tmp['city'] = pair[0] #'city': 1,
+            tmp['language'] = pair[1] # 'language': 1,
+            # url_data = url_dict.get(pair)
+            tmp['url_data'] = url_dict[pair] # {'work': 'https://www.work.ua/ru/jobs-kyiv-python', 'rabota': 'https://rabota.ua/zapros/python/%D1%83%D0%BA%D1%80%D0%B0%D0%B8%D0%BD%D0%B0', 'dou': 'https://jobs.dou.ua/vacancies/?city=%D0%9A%D0%B8%D0%B5%D0%B2&category=Python', 'djinni': 'https://djinni.co/jobs/?location=%D0%9A%D0%B8%D0%B5%D0%B2&primary_keyword=Python'}
+            urls.append(tmp) # [{'city': 1, 'language': 1, 'url_data': {'work': 'https://www.work.ua/ru/jobs-kyiv-python', 'rabota': 'https://rabota.ua/zapros/python/%D1%83%D0%BA%D1%80%D0%B0%D0%B8%D0%BD%D0%B0', 'dou': 'https://jobs.dou.ua/vacancies/?city=%D0%9A%D0%B8%D0%B5%D0%B2&category=Python', 'djinni': 'https://djinni.co/jobs/?location=%D0%9A%D0%B8%D0%B5%D0%B2&primary_keyword=Python'}}]
     return urls
 async def main(value):
     func, url, city, language = value # таким образом мы получаем значения запакованные tmp_tasks =  [(func, data['url_data'][key], data['city'], data['language'])
@@ -107,7 +107,13 @@ for job in jobs:
         pass
 
 if errors:
-    er = Error(data=errors).save()
+    qs = Error.objects.filter(timestamp=dt.date.today())
+    if qs.exists(): # если кто ч утра записал
+        err = qs.first()# уникальность в один день одна запись
+        err.data.update({'errors': errors})
+        err.save()
+    else:
+        er = Error(data=f'errors:{errors}').save() # в словаре будет храниться весь массив ошибок которые были получены в этот день
 # 52 урок закоментили
 # h = codecs.open('work.txt', 'w', 'utf-8')# открываем в режиме записи и задаем кодировку 'utf-8'
 # h.write(str(jobs))# записываем весь контент словарем
